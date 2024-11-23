@@ -134,6 +134,50 @@ app.post("/add-products", verifyJWT, verifyRole("seller"), async (req, res) => {
   res.status(201).json(result);
 });
 
+//delete products
+app.delete("/product/:id",  async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const result = await productCollection.deleteOne({ _id: new ObjectId(id) });
+
+    if (result.deletedCount === 1) {
+      res.status(200).json({ message: "Product deleted successfully" });
+    } else {
+      res.status(404).json({ message: "Product not found" });
+    }
+  } catch (error) {
+    console.error("Error deleting product:", error);
+    res.status(500).json({ message: "Failed to delete product" });
+  }
+});
+
+
+// update products
+app.patch("/products/:id",  async (req, res) => {
+  const { id } = req.params;
+  const { title, price, description } = req.body;
+
+  try {
+    const updatedData = { $set: { title, price, description } };
+
+    const result = await productCollection.updateOne(
+      { _id: new ObjectId(id) },
+      updatedData
+    );
+
+    if (result.modifiedCount === 1) {
+      res.status(200).json({ message: "Product updated successfully" });
+    } else {
+      res.status(404).json({ message: "Product not found or no changes made" });
+    }
+  } catch (error) {
+    console.error("Error updating product:", error);
+    res.status(500).json({ message: "Failed to update product" });
+  }
+});
+
+
 // featured product
 app.get("/products", async (req, res) => {
   try {
